@@ -1,6 +1,7 @@
 import os
 from environs import Env
 import src.process_files as pf
+import src.helper_functions as hf
 
 def main():
     # read parameters
@@ -35,7 +36,7 @@ def main():
     # process files
     for fundraising_file in fundraising_files:
         fundraising_file_processed = fundraising_file[:-4]+'_processed.csv'
-        df_file = pf.load_file(fundraising_file, path, ';')
+        df_file = hf.load_file(fundraising_file, path, ';')
         df_clean = pf.from_fundraisingbox(df_file)
         df_agg = pf.process_to_one_mailadress(df_clean, cols_for_chimp)
         df_final = pf.process_to_mailchimp(df_agg, col_map_for_chimp, fundraising_file_processed)
