@@ -211,11 +211,6 @@ def send_entries_to_mailchimp(df_to_mc, list_id, mc_api_key, server):
         phone = row[5]
         tags = row[6]
 
-        # hash mail address        
-        mail_adress_b = str.encode(mail_adress)
-        mail_hash = hashlib.md5(mail_adress_b.lower())
-        mail_hash_str = mail_hash.hexdigest()
-
         # configure mailchimp client
         client = MailchimpMarketing.Client()
         client.set_config({
@@ -229,24 +224,71 @@ def send_entries_to_mailchimp(df_to_mc, list_id, mc_api_key, server):
 
         # send data to mailchimp
         create_new_entry(client, list_id, mail_adress, merged_fields, tags)
-        update_existing_entry(client, list_id, mail_adress, mail_hash_str, merged_fields)
+        update_existing_entry(client, list_id, mail_adress, merged_fields)
 
 
 def create_new_entry(client, list_id, mail_addr, merge_fields, tags):
+    """Tries to create a new entry in the given list in mailchimp.
+
+    Args:
+        client: Client object from mailchimp. Needed for communication with the service.
+        list_id ([str]): ID of the list where the entry should be added.
+        mail_addr ([str]): mail adress of the entry. Used as the primary identifier.
+        merge_fields ([dict]): A dictionary contain information for additional fields.
+        tags ([list]): Contains a list of tags that will be added.
+    """
     try:
         response = client.lists.add_list_member(list_id, {"email_address": mail_addr, "status": "subscribed", "tags":tags, "merge_fields":merge_fields})
         print(response)
     except ApiClientError as error:
         print("Error on mail address {}: {}".format(mail_addr, error.text))
 
-def update_existing_entry(client, list_id, mail_addr, mail_h, merge_fields):
+
+def hash_string(input_str):
+    """Helper function to hash a string.
+
+    Args:
+        input_str ([str]): Input string that shall be hashed.
+
+    Returns:
+        [str]: MD5 hash of the input string.
+    """
+    input_b = str.encode(input_str)
+    input_hash = hashlib.md5(input_b.lower())
+    input_hash_str = input_hash.hexdigest()
+    
+    return input_hash_str
+
+
+def update_existing_entry(client, list_id, mail_addr, merge_fields):
+    """Tries to update an existing entry.
+
+    Args:
+        client: Client object from mailchimp. Needed for communication with the service.
+        list_id ([str]): ID of the list where the entry should be added.
+        mail_addr ([str]): mail adress of the entry. Used as the primary identifier.
+        merge_fields ([dict]): A dictionary contain information for additional fields.
+        tags ([list]): Contains a list of tags that will be added.
+    """
+    # hash mail address        
+    mail_h = hash_string(mail_addr)
+    # send entry
     try:
         response = client.lists.set_list_member(list_id, mail_h, {"email_address": mail_addr, "status_if_new": "subscribed", "merge_fields":merge_fields})
         print(response)
     except ApiClientError as error:
         print("Erroron mail address {}: {}".format(mail_addr, error.text))
 
+
 def get_timestamp(format_str="%Y%M%d_%H-%M-%S"):
+    """Helper function that generates a timestamp string in the default format "%Y%M%d_%H-%M-%S".
+
+    Args:
+        format_str (str, optional): Can be given to get timestamp in certain format. Defaults to "%Y%M%d_%H-%M-%S".
+
+    Returns:
+        [str]: String containing the timestamp in the given format.
+    """
     now = datetime.now()
     current_timestamp = now.strftime(format_str)
     
@@ -254,6 +296,16 @@ def get_timestamp(format_str="%Y%M%d_%H-%M-%S"):
 
 
 def clean_up(fname, fname_processed, data_path = './data/', folder_name='processed'):
+    """Helper Function to clean up after successfully processing input csv files.
+        Copies the input file and the written processed version to the folder 'processed' into a time folder.
+
+    Args:
+        fname ([str]): Input file that was processed.
+        fname_processed ([str]): Input file post processing, is named like input file but with a '_processed' at the end.
+        data_path (str, optional): Path to the data folder. Defaults to './data/'.
+        folder_name (str, optional): Name of the subfolder within the data folder that is used for archiving. 
+            Defaults to 'processed'.
+    """
     ts = get_timestamp()
     path = data_path+folder_name+'/'+ts +'/'
     print(path)
