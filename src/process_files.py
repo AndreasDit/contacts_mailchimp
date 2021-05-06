@@ -36,7 +36,7 @@ def from_fundraisingbox(df_input, mode=''):
     df_fund_want_nl = df_fund_trans[df_fund_trans['wants_nl'] == '1'].copy()
     
     # Cast some datetypes
-    df_fund_want_nl['post_code'] = df_fund_want_nl['post_code'].astype(int)
+    # df_fund_want_nl['post_code'] = df_fund_want_nl['post_code'].astype(int)
     df_fund_want_nl['post_code'] = df_fund_want_nl['post_code'].astype(str)
     df_fund_want_nl['state'] = df_fund_want_nl['state'].astype(str)
     
