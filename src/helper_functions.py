@@ -7,7 +7,7 @@ import urllib.request
 import matplotlib.pyplot as plt
 import logging
 import urllib.request
-import chimpy
+# import chimpy
 import shutil
 import os
 import hashlib
