@@ -156,7 +156,7 @@ def hash_string(input_str):
     return input_hash_str
 
 
-def update_existing_entry(client, list_id, mail_addr, merge_fields):
+def update_existing_entry(client, list_id, mail_addr, merge_fields, l_tags):
     """Tries to update an existing entry.
 
     Args:
@@ -172,10 +172,19 @@ def update_existing_entry(client, list_id, mail_addr, merge_fields):
     try:
         response = client.lists.set_list_member(list_id, mail_h,
                                                 {"email_address": mail_addr, "status_if_new": "subscribed",
-                                                 "merge_fields": merge_fields})
+                                                 "status": "subscribed", "merge_fields": merge_fields})
         print(response)
     except ApiClientError as error:
-        print("Erroron mail address {}: {}".format(mail_addr, error.text))
+        print("Error on mail address {}: {}".format(mail_addr, error.text))
+    for tag in l_tags:
+        try:
+            response = client.lists.update_list_member_tags(list_id, mail_h, 
+                                                    {"tags": [{"name": tag, "status": "active"}]})
+            print(response)
+        except ApiClientError as error:
+            print("Error on updating tag '{}' for mail address {}: {}".format(tag, mail_addr, error.text))
+
+
 
 
 def get_timestamp(format_str="%Y%m%d_%H-%M-%S"):
