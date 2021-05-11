@@ -274,7 +274,7 @@ def send_entries_to_mailchimp(df_to_mc, list_id, mc_api_key, server):
 
         # send data to mailchimp
         hf.create_new_entry(client, list_id, mail_adress, merged_fields, tags)
-        hf.update_existing_entry(client, list_id, mail_adress, merged_fields)
+        hf.update_existing_entry(client, list_id, mail_adress, merged_fields, tags)
 
 
 def clean_up(fname, fname_processed, timest, data_path = './data/', folder_name='processed'):
